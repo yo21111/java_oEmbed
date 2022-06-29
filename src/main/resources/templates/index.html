@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Oembed Test Site</title>
+</head>
+<link rel="stylesheet" href="css/home.css" type="text/css"/>
+<body>
+<div class="container">
+    <header>
+        <div id="title">oEmbed Test</div>
+
+        <div id="input_Box">
+            <input type="text" placeholder="url을 입력해주세요" id="url" name="url"/>
+            <button id="searchBtn" type="button">확인</button>
+        </div>
+    </header>
+    <article>
+        <div id="content_wrap">
+            <div id="title_container"></div>
+            <table id="responseDataInContainer"></table>
+        </div>
+    </article>
+</div>
+<!-- /container -->
+</body>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+        crossorigin="anonymous"
+></script>
+<script>
+    $(function () {
+        $("button#searchBtn").click(function () {
+            let url = $("input#url").val();
+            $.ajax({
+                url: "/oEmbed?url=" + url,
+                type: "GET",
+                success: function onData(data) {
+                    const table = document.getElementById("responseDataInContainer");
+                    $("table tr").remove();
+                    for (let i in data) {
+                        if (data[i] !== null) {
+                            const newRow = table.insertRow();
+                            newRow.insertCell(0).innerText = i;
+                            if (data[i].startsWith("http")) {
+                                newRow.insertCell(1).innerHTML = "<a href='" + data[i] + "'>" + data[i] + "</a>";
+                            } else if (data[i].startsWith("<")) {
+                                let cell = newRow.insertCell(1);
+                                cell.innerHTML = "<div>" + data[i].replaceAll('<', '&lt;').replaceAll('>', '&gt;') + "</div><br>" + data[i];
+                            } else {
+                                newRow.insertCell(1).innerText = data[i];
+                            }
+                        }
+                    }
+                },
+                error: function onError(error) {
+                    console.error(error);
+                    const table = document.getElementById("responseDataInContainer");
+                    $("table tr").remove();
+                    const newRow = table.insertRow();
+                    newRow.insertCell(0).innerHTML = "<h2 class='errorMsg'>잘못된 요청 url 입니다.</h2><p class='errorMsg'>입력하신 url 을 다시 확인해주세요.</p>";
+                },
+            });
+        });
+    });
+</script>
+</html>
